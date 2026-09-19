@@ -26,7 +26,9 @@ import { TOKEN_URL,API_URL,CLIENT_ID,CLIENT_SECRET,TOKEN,TELEPHONE } from "../co
 
 interface tokenData {
   access_token: string;
+  token_type: string;
 }
+
   const button = document.querySelector('#sendmessage');
 //   const container = document.querySelector('#profile-container');
 
@@ -37,11 +39,15 @@ interface tokenData {
   const tlabel = document.getElementById("vlabel") as HTMLInputElement;
 
 
-  const token2=TOKEN;
-
-
+//   const token2=await gettoken();
+const token2=TOKEN;
 
   button?.addEventListener('click', async () => {
+
+    if(!token2){
+        tlabel.innerText="Token could not be generated...";
+        return;
+    }
 
     var vname = tname.value;
     var vreference = treference.value;
@@ -77,7 +83,7 @@ if(!vdate){tlabel.innerText="Estimated Delivery date should be specified!"; retu
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${TOKEN}`, // Pass token here
+            'Authorization': `Bearer ${token2}`, // Pass token here
             'Accept': 'application/json'
             },
             body: JSON.stringify(bodyjson)
@@ -105,43 +111,41 @@ if(!vdate){tlabel.innerText="Estimated Delivery date should be specified!"; retu
     const expiresAt = localStorage.getItem('expires_at'); 
 
     if (expiresAt) {
-    const isExpired = Date.now() >= parseInt(expiresAt, 10);
-    
-    if (isExpired) {
-        console.log('Token has expired!');
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('expires_at');
+        const isExpired = Date.now() >= parseInt(expiresAt, 10);
+        
+        if (isExpired) {
+            console.log('Token has expired!');
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('expires_at');
 
-        var token=await getAccessToken();
-        const now = new Date();
-        const expiry=now.getTime()+ (24* 60 * 60 * 1000);
-
-        localStorage.setItem('access_token', token);
-        localStorage.setItem('expires_at', String(expiry));
-
-    } else {
-        const token = localStorage.getItem('token');
-        return token;
+        } else {
+            const token = localStorage.getItem('token');
+            return token;
+        }
     }
-    }
+
+    console.log('getting token!');
+    const token2=await getAccessToken();
+    const now = new Date();
+    const expiry=now.getTime()+ (24* 60 * 60 * 1000);
+
+    localStorage.setItem('access_token', token2);
+    localStorage.setItem('expires_at', String(expiry));    
+    return token2;
 
  }
 
 
 async function getAccessToken() {
   
-  const tokenUrl = TOKEN_URL;
+//   const tokenUrl = TOKEN_URL + "?client_id=" + CLIENT_ID + "&client_secret=" + CLIENT_SECRET + "&grant_type=client_credentials";
+    const tokenUrl = import.meta.env.BASE_URL +"api/gettoken" ;
   
     const response = await fetch(tokenUrl, {
-    method: 'POST',
+    method: 'GET',
     headers: {
         'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-        grant_type: 'client_credentials',
-        client_id: CLIENT_ID,
-        client_secret: CLIENT_SECRET
-    })
+    }
     });
 
     const data = await response.json() as tokenData;
