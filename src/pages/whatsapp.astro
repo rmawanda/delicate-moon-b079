@@ -35,6 +35,7 @@ interface tokenData {
   const tname = document.getElementById("vname") as HTMLInputElement;
   const treference = document.getElementById("reference") as HTMLInputElement;
   const tdate = document.getElementById("vdate") as HTMLInputElement;
+  const ttelephone = document.getElementById("vtelephone") as HTMLInputElement;
 
   const tlabel = document.getElementById("vlabel") as HTMLInputElement;
 
@@ -52,11 +53,13 @@ const token2=TOKEN;
     var vname = tname.value;
     var vreference = treference.value;
     var vdate = tdate.value;
+    var vtelephone = ttelephone.value;
 
 
 if(!vname){tlabel.innerText="Name should be specified!"; return;}
 if(!vreference){tlabel.innerText="Quotation No should be specified!"; return;}
 if(!vdate){tlabel.innerText="Estimated Delivery date should be specified!"; return;}
+if(!vtelephone){tlabel.innerText="Whatsapp telephone no should be specified!"; return;}
 
     tlabel.innerText="Sending Message...Please wait...";
     //alert(vname);
@@ -64,7 +67,7 @@ if(!vdate){tlabel.innerText="Estimated Delivery date should be specified!"; retu
     //alert(vdate);
     //return;
 
-    var bodyjson = { "messaging_product": "whatsapp","to": "" + TELEPHONE + "",
+    var bodyjson = { "messaging_product": "whatsapp","to": "" + vtelephone + "",
     "type": "template",
     "template": { "name": "jaspers_market_order_confirmation_v1",
             "language": { "code": "en_US" },
@@ -92,7 +95,7 @@ if(!vdate){tlabel.innerText="Estimated Delivery date should be specified!"; retu
         if (!response.ok) {
             tlabel.innerText=`HTTP error! Status: ${response.status}`;
         } else{
-            tlabel.innerText="Message Sent to " + TELEPHONE + ".";
+            tlabel.innerText="Message Sent to " + vtelephone + ".";
         }
 
     } catch (error) {
@@ -175,6 +178,7 @@ async function getAccessToken() {
 <tr>    <td width="220px"> <label> Name of Customer: </label> </td> <td> <input type="text" id="vname" class="ricinput"/> </td> </tr>
 <tr>    <td> <label> Order Number: </label> </td> <td> <input type="text" id="reference" class="ricinput"/> </td> </tr>
 <tr>    <td> <label> Estimated Delivery Date: </label> </td> <td> <input type="text" id="vdate" class="ricinput"/> </td>  </tr>
+<tr>    <td> <label> Telephone No: </label> </td> <td> <input type="text" id="vtelephone" value="256772807127" class="ricinput"/> </td>  </tr>
 
 <tr>    <td></td>  <td> <button id="sendmessage" style="width:200px; height:40px;font-size:18px">Send Message</button> </td>  </tr>
 
