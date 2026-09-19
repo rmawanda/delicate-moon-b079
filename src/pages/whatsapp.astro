@@ -1,0 +1,187 @@
+---
+import BaseHead from '../components/BaseHead.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { SITE_TITLE, SITE_DESCRIPTION} from '../consts';
+import { string } from 'astro:schema';
+
+---
+
+<style>
+    .ricinput {
+        border: 1px solid#ccc;
+        border-radius: 5px;
+        width: 300px;
+        /* max-width: 100%; */
+        font-size: medium;
+        /* float: right; */
+        height: 30px
+    }
+</style>
+
+<script>
+import { getTokenSourceMapRange } from "typescript";
+
+import { TOKEN_URL,API_URL,CLIENT_ID,CLIENT_SECRET,TOKEN,TELEPHONE } from "../consts";  
+
+interface tokenData {
+  access_token: string;
+}
+  const button = document.querySelector('#sendmessage');
+//   const container = document.querySelector('#profile-container');
+
+  const tname = document.getElementById("vname") as HTMLInputElement;
+  const treference = document.getElementById("reference") as HTMLInputElement;
+  const tdate = document.getElementById("vdate") as HTMLInputElement;
+
+  const tlabel = document.getElementById("vlabel") as HTMLInputElement;
+
+
+  const token2=TOKEN;
+
+
+
+  button?.addEventListener('click', async () => {
+
+    var vname = tname.value;
+    var vreference = treference.value;
+    var vdate = tdate.value;
+
+if(!vname){tlabel.innerText="Name should be specified!"; return;}
+if(!vreference){tlabel.innerText="Quotation No should be specified!"; return;}
+if(!vdate){tlabel.innerText="Estimated Delivery date should be specified!"; return;}
+
+    tlabel.innerText="Sending Message...Please wait...";
+    //alert(vname);
+    //alert(vreference);
+    //alert(vdate);
+    //return;
+
+    var bodyjson = { "messaging_product": "whatsapp","to": "" + TELEPHONE + "",
+    "type": "template",
+    "template": { "name": "jaspers_market_order_confirmation_v1",
+            "language": { "code": "en_US" },
+        "components": [{ "type": "body", "parameters": [{ "type": "text", "text": "" + vname + "" }, { "type": "text", "text": "" + vreference + "" }, { "type": "text", "text": "" + vdate + "" }] }]
+        }
+    }
+
+    // alert(JSON.stringify(body));
+    // return;            
+   
+
+
+
+  try {
+
+        const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${TOKEN}`, // Pass token here
+            'Accept': 'application/json'
+            },
+            body: JSON.stringify(bodyjson)
+        });
+
+        if (!response.ok) {
+            tlabel.innerText=`HTTP error! Status: ${response.status}`;
+        } else{
+            tlabel.innerText="Message Sent to " + TELEPHONE + ".";
+        }
+
+    } catch (error) {
+        tlabel.innerText="Fetch operation failed.";
+        // alert(JSON.stringify(error));
+        // console.error("Fetch operation failed:", error.message);
+    }
+
+  }
+
+);
+
+
+ async function gettoken(){
+
+    const expiresAt = localStorage.getItem('expires_at'); 
+
+    if (expiresAt) {
+    const isExpired = Date.now() >= parseInt(expiresAt, 10);
+    
+    if (isExpired) {
+        console.log('Token has expired!');
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('expires_at');
+
+        var token=await getAccessToken();
+        const now = new Date();
+        const expiry=now.getTime()+ (24* 60 * 60 * 1000);
+
+        localStorage.setItem('access_token', token);
+        localStorage.setItem('expires_at', String(expiry));
+
+    } else {
+        const token = localStorage.getItem('token');
+        return token;
+    }
+    }
+
+ }
+
+
+async function getAccessToken() {
+  
+  const tokenUrl = TOKEN_URL;
+  
+    const response = await fetch(tokenUrl, {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+        grant_type: 'client_credentials',
+        client_id: CLIENT_ID,
+        client_secret: CLIENT_SECRET
+    })
+    });
+
+    const data = await response.json() as tokenData;
+    console.log('Access Token Object:', data);
+    
+    return data.access_token; 
+  } 
+  
+
+</script>
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+	</head>
+	<body>
+		<Header />
+		<main>
+			<h2>Whatsapp Messaging Sample!</h2>
+			<p>
+				Please specify options below.
+			</p>
+<div>
+
+<table>
+<tr>    <td width="220px"> <label> Name of Customer: </label> </td> <td> <input type="text" id="vname" class="ricinput"/> </td> </tr>
+<tr>    <td> <label> Order Number: </label> </td> <td> <input type="text" id="reference" class="ricinput"/> </td> </tr>
+<tr>    <td> <label> Estimated Delivery Date: </label> </td> <td> <input type="text" id="vdate" class="ricinput"/> </td>  </tr>
+
+<tr>    <td></td>  <td> <button id="sendmessage" style="width:200px; height:40px;font-size:18px">Send Message</button> </td>  </tr>
+
+</table>
+
+
+</div>
+
+<span id="vlabel" style="color:yellow;background-color:grey;font-size:medium;"></span>
+
+        </main>
+		<Footer />
+	</body>
+</html>
